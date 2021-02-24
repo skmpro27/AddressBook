@@ -61,7 +61,7 @@ public class AddressBookMain {
 			list.add( new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
 		}
 	}
-
+	//to edit paticular contact
 	public static String edit() {
 		String name1st, name2nd;
 		System.out.print("Enter first name: ");
@@ -94,10 +94,29 @@ public class AddressBookMain {
 		}
 		return "Name not found";
 	}
+	//to remove contact
+	public static String remove() {
+		String name1st, name2nd;
+		System.out.print("Enter first name: ");
+		name1st = sc.nextLine();
+		System.out.print("Enter Second name: ");
+		name2nd = sc.nextLine();
+
+		for(int i = 0; i < list.size(); i++) {
+			if (name1st.equals(list.get(i).firstName) && name2nd.equals(list.get(i).lastName)) {
+				list.remove(i);
+				return "Deleted";
+			}
+		}
+		return "Name not found";
+	}
 
 	public static void main(String[] args) {
 		System.out.println("Welcome to Address Book Program");
 		addContact();
 		System.out.println(edit());
+		System.out.println(remove());
+		for(int i = 0; i < list.size(); i++)
+			System.out.println(list.get(i));
 	}
 }

@@ -8,6 +8,11 @@ class Contact {
         private String zip;
         private String phoneNum;
         private String email;
+
+	//Default constructor
+	public Contact() {
+		this("NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA");
+	}
         //initialize variables by constructor
         public Contact(String firstName, String lastName, String address, String city, String state, String zip, String phoneNum, String email) {
                 this.firstName = firstName;
@@ -92,96 +97,111 @@ class Contact {
 }
 
 public class AddressBookMain {
-        //to add new objects
-        static ArrayList<Contact> list = new ArrayList<Contact>();
+
+	private static String firstName, lastName;
+	static int key;
+	static Contact con = new Contact();
+	//to create objects of class contact
+        static Map<Integer,Contact> list = new HashMap<>();
 
         static Scanner sc = new Scanner(System.in);
 
+	public static boolean checkName() {
+		System.out.print("Enter First Name: ");
+                firstName = sc.nextLine();
+               	System.out.print("Enter Last Name: ");
+              	lastName = sc.nextLine();
+	        for(Map.Entry<Integer,Contact>ls : list.entrySet()) {
+			con = ls.getValue();
+			key = ls.getKey();
+                       	if (firstName.equals(con.getFirstName()) && lastName.equals(con.getLastName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
         //taking input from user
         public static void addContact() {
-                String firstName, lastName, address, city, state, zip, phoneNum, email;
+                String address, city, state, zip, phoneNum, email;
 		String check = "y";
+		int i = 1;
 
                 while(check.equals("y") || check.equals("Y")) {
-	                System.out.print("Enter First Name: ");
-        	        firstName = sc.nextLine();
-                	System.out.print("Enter Last Name: ");
-               		lastName = sc.nextLine();
-	                System.out.print("Enter Address: ");
-        	        address = sc.nextLine();
-                	System.out.print("Enter City: ");
-	                city = sc.nextLine();
-        	        System.out.print("Enter State ");
-                	state = sc.nextLine();
-	                System.out.print("Enter ZIP Code: ");
-        	        zip = sc.nextLine();
-                	System.out.print("Enter Phone Number: ");
-	                phoneNum = sc.nextLine();
-        	        System.out.print("Enter Email: ");
-                	email = sc.nextLine();
+
+	       		if (!checkName()) {
+				System.out.print("Enter Address: ");
+        	       		address = sc.nextLine();
+               			System.out.print("Enter City: ");
+	               		city = sc.nextLine();
+       	        		System.out.print("Enter State ");
+               			state = sc.nextLine();
+	               		System.out.print("Enter ZIP Code: ");
+        	      		zip = sc.nextLine();
+                		System.out.print("Enter Phone Number: ");
+	               		phoneNum = sc.nextLine();
+        	       		System.out.print("Enter Email: ");
+                		email = sc.nextLine();
+		                list.put(i, new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
+				i++;
+			}
+			else
+				System.out.println("Contact already exist");
 			System.out.print("Do you want to add more Contacts(y/n): ");
                         check = sc.nextLine();
 	                System.out.println();
 
-	                list.add( new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
 		}
         }
         //to edit particular contact
         public static String edit() {
-                String name1st, name2nd;
-                System.out.print("Enter first name: ");
-                name1st = sc.nextLine();
-                System.out.print("Enter Second name: ");
-                name2nd = sc.nextLine();
-
-                for(int i = 0; i < list.size(); i++) {
-                        if (name1st.equals(list.get(i).getFirstName()) && name2nd.equals(list.get(i).getLastName())) {
-                                System.out.print("Enter First Name: ");
-                                list.get(i).setFirstName(sc.nextLine());
-                                System.out.print("Enter Last Name: ");
-                                list.get(i).setLastName(sc.nextLine());
-                                System.out.print("Enter Address: ");
-                                list.get(i).setAddress(sc.nextLine());
-                                System.out.print("Enter City: ");
-                                list.get(i).setCity(sc.nextLine());
-                                System.out.print("Enter State ");
-                                list.get(i).setState(sc.nextLine());
-                                System.out.print("Enter ZIP Code: ");
-                                list.get(i).setZip(sc.nextLine());
-                                System.out.print("Enter Phone Number: ");
-                                list.get(i).setPhoneNum(sc.nextLine());
-                                System.out.print("Enter Email: ");
-                                list.get(i).setEmail(sc.nextLine());
-                                System.out.println();
-                                System.out.println(list.get(i));
-                                return "Updated";
-                        }
+		if (checkName()) {
+                        System.out.println();
+                	System.out.print("Enter First Name: ");
+                        con.setFirstName(sc.nextLine());
+                        System.out.print("Enter Last Name: ");
+                        con.setLastName(sc.nextLine());
+                        System.out.print("Enter Address: ");
+                        con.setAddress(sc.nextLine());
+                        System.out.print("Enter City: ");
+                        con.setCity(sc.nextLine());
+                        System.out.print("Enter State ");
+                        con.setState(sc.nextLine());
+                        System.out.print("Enter ZIP Code: ");
+                        con.setZip(sc.nextLine());
+                        System.out.print("Enter Phone Number: ");
+                        con.setPhoneNum(sc.nextLine());
+                        System.out.print("Enter Email: ");
+                        con.setEmail(sc.nextLine());
+                        System.out.println();
+                        System.out.println(con);
+                        return "Updated";
                 }
                 return "Name not found";
         }
         //to remove contact
         public static String remove() {
-                String name1st, name2nd;
-                System.out.print("Enter first name: ");
-                name1st = sc.nextLine();
-                System.out.print("Enter Second name: ");
-                name2nd = sc.nextLine();
 
-                for(int i = 0; i < list.size(); i++) {
-                        if (name1st.equals(list.get(i).getFirstName()) && name2nd.equals(list.get(i).getLastName())) {
-                                list.remove(i);
-                                return "Deleted";
-                        }
+        	if (checkName()) {
+	                list.remove(key);
+                	return "Deleted";
                 }
                 return "Name not found";
         }
+
+	public static void display() {
+                for(Map.Entry<Integer,Contact>ls : list.entrySet()) {
+			Contact con = ls.getValue();
+                        System.out.println();
+                        System.out.println(con);
+		}
+	}
 
         public static void main(String[] args) {
                 System.out.println("Welcome to Address Book Program");
                 addContact();
                 System.out.println(edit());
                 System.out.println(remove());
-                for(int i = 0; i < list.size(); i++)
-                        System.out.println(list.get(i));
+		display();
         }
 }

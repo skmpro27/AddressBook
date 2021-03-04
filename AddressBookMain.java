@@ -16,11 +16,6 @@ class Contact {
     private String phoneNum;
     private String email;
 
-    //Default constructor
-    public Contact() {
-
-    }
-
     //initialize variables by constructor
     public Contact(String firstName, String lastName, String address, String city, String state, String zip, String phoneNum, String email) {
         this.firstName = firstName;
@@ -97,6 +92,7 @@ class Contact {
         this.email = email;
     }
 
+    @Override
     public String toString() {
         return "Name: " + firstName + " " + lastName +
                 "\nAddress: " + address + ", " + city + ", " + state +
@@ -106,42 +102,37 @@ class Contact {
 
 class AddressBook {
 
-    private static String firstName, lastName, fullName;
-    private static String key;
-    private static String bookName;
-
-    public static Contact contact = new Contact();
+    public String bookName;
+    public String firstName;
+    public String lastName;
+    public int index;
 
     public AddressBook(String bookName) {
         this.bookName = bookName;
     }
 
-    //to create objects of class contact
-    static Map<String,Contact> list = new HashMap<>();
-    static Scanner sc = new Scanner(System.in);
+    ArrayList<Contact> list = new ArrayList<Contact>();
 
-    public static boolean checkName() {
-        System.out.print("Enter First Name: ");
+    Scanner sc = new Scanner(System.in);
+
+    public boolean checkName() {
+        System.out.print("\nEnter First Name: ");
         firstName = sc.nextLine();
         System.out.print("Enter Last Name: ");
         lastName = sc.nextLine();
-        fullName = firstName + " " + lastName;
-        for(Map.Entry<String,Contact>ls : list.entrySet()) {
-            contact = ls.getValue();
-            key = ls.getKey();
-            if (firstName.equals(contact.getFirstName()) && lastName.equals(contact.getLastName()))
+        for(index = 0; index < list.size(); index++) {
+            if (firstName.equals(list.get(index).getFirstName()) && lastName.equals(list.get(index).getLastName()))
                 return true;
         }
         return false;
     }
 
-    //taking input from user
-    public static void addContact() throws AlreadyExistContactException {
 
-        System.out.println();
-        System.out.println("Add new contact: ");
-        String address, city, state, zip, phoneNum, email;
+    //taking input from user
+    public void addContact() throws AlreadyExistContactException {
+        String address = null, city = null, state = null, zip = null, phoneNum = null, email = null;
         String check = "y";
+        System.out.println("\nAdd Contact");
 
         while(check.equals("y") || check.equals("Y")) {
             if (!checkName()) {
@@ -157,75 +148,70 @@ class AddressBook {
                 phoneNum = sc.nextLine();
                 System.out.print("Enter Email: ");
                 email = sc.nextLine();
-                list.put(fullName, new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
-            } else {
+            } else
                 throw new AlreadyExistContactException("Contact name already exist");
-            }
+
             System.out.print("Do you want to add more Contacts(y/n): ");
             check = sc.nextLine();
-            System.out.println();
+            list.add( new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
         }
     }
 
     //to edit particular contact
-    public static String editContact() {
-
-        System.out.println();
-        System.out.println("Edit contact: ");
-        if (checkName()) {
-            System.out.println();
-            System.out.print("Enter First Name: ");
-            contact.setFirstName(sc.nextLine());
+    public String editContact() {
+        System.out.println("\nEdit Contact");
+        if (!checkName()) {
+            System.out.print("\nEnter First Name: ");
+            list.get(index).setFirstName(sc.nextLine());
             System.out.print("Enter Last Name: ");
-            contact.setLastName(sc.nextLine());
+            list.get(index).setLastName(sc.nextLine());
             System.out.print("Enter Address: ");
-            contact.setAddress(sc.nextLine());
+            list.get(index).setAddress(sc.nextLine());
             System.out.print("Enter City: ");
-            contact.setCity(sc.nextLine());
+            list.get(index).setCity(sc.nextLine());
             System.out.print("Enter State ");
-            contact.setState(sc.nextLine());
+            list.get(index).setState(sc.nextLine());
             System.out.print("Enter ZIP Code: ");
-            contact.setZip(sc.nextLine());
+            list.get(index).setZip(sc.nextLine());
             System.out.print("Enter Phone Number: ");
-            contact.setPhoneNum(sc.nextLine());
+            list.get(index).setPhoneNum(sc.nextLine());
             System.out.print("Enter Email: ");
-            contact.setEmail(sc.nextLine());
+            list.get(index).setEmail(sc.nextLine());
             System.out.println();
-            System.out.println(contact);
+            System.out.println(list.get(index));
             return "Updated";
         }
         return "Name not found";
     }
 
     //to remove contact
-    public static String removeContact() {
-
-        System.out.println();
-        System.out.println("Remove contact: ");
+    public String removeContact() {
+        System.out.println("\nRemove Contact");
         if (checkName()) {
-            list.remove(key);
+            list.remove(index);
             return "Deleted";
         }
         return "Name not found";
     }
 
-    public static void displayContact() {
-        for (Map.Entry<String,Contact>ls : list.entrySet()) {
-            Contact con = ls.getValue();
+    public void displayContact() {
+        for (int i = 0; i < list.size(); i++) {
             System.out.println();
-            System.out.println(con);
+            System.out.println(list.get(i));
         }
     }
 
+    @Override
     public String toString() {
         return bookName;
     }
-
 }
 
 public class AddressBookMain {
 
     public static int numBook = 0;
+
+    public static Scanner scanner = new Scanner(System.in);
 
     public static ArrayList<AddressBook> book = new ArrayList<>();
 
@@ -234,85 +220,95 @@ public class AddressBookMain {
     }
 
     public static void addAddressBook() {
-        Scanner sc = new Scanner(System.in);
         System.out.print("Enter name of new Address Book: ");
-        String str = sc.nextLine();
+        String str = scanner.nextLine();
         book.add( new AddressBook(str));
-        numBook++;
     }
 
     public static void removeAddressBook() {
-        Scanner sc = new Scanner(System.in);
         if (book.size() > 1) {
-            for (int i = 1; i < book.size(); i++)
-                System.out.println(i + ". " + book.get(i));
-            System.out.print("Choose number to delete: ");
-            numBook = sc.nextInt();
+            chooseAddressbook();
             book.remove(numBook);
-            numBook = book.size() - 1;
         }
         else
             System.out.println("Only default Address Book is Available");
     }
 
-    public static void choice() {
-        Scanner sc = new Scanner(System.in);
-        String choose = "y";
-        while (choose.equals("y") || choose.equals("y")) {
+    private static void chooseAddressbook() {
+        System.out.println("Current Address Book: " + book.get(numBook));
+        if (book.size() > 1) {
+            for (int i = 0; i < book.size(); i++)
+                System.out.println(i + ". " + book.get(i));
+            System.out.print("Choose number for Address Book: ");
+            numBook = Integer.parseInt(scanner.nextLine());
+        }
+    }
 
+    public static void choice() {
+        try {
             System.out.println();
+            System.out.println("Current Address Book: " + book.get(numBook));
             System.out.println("1. Add Contact");
             System.out.println("2. Edit Contact");
             System.out.println("3. Delete Contact");
             System.out.println("4. Display Contact");
             System.out.println("5. Add Address Book");
             System.out.println("6. Delete Address Book");
+            System.out.println("7. Switch Address Book");
+            System.out.println("8. Exit");
 
-            System.out.print("Enter your choice(1-6): ");
-            choose = sc.nextLine();
-            try {
-                switch (choose) {
+            System.out.print("Enter your choice(1-8): ");
+            String choose = scanner.nextLine();
+            switch (choose) {
 
-                    case "1":
-                        book.get(numBook).addContact();
-                        break;
+                case "1":
+                    book.get(numBook).addContact();
+                    break;
 
-                    case "2":
-                        book.get(numBook).editContact();
-                        break;
+                case "2":
+                    chooseAddressbook();
+                    System.out.println(book.get(numBook).editContact());
+                    break;
 
-                    case "3":
-                        book.get(numBook).removeContact();
-                        break;
+                case "3":
+                    chooseAddressbook();
+                    System.out.println(book.get(numBook).removeContact());
+                    break;
 
-                    case "4":
-                        book.get(numBook).displayContact();
-                        break;
+                case "4":
+                    chooseAddressbook();
+                    book.get(numBook).displayContact();
+                    break;
 
-                    case "5":
-                        addAddressBook();
-                        break;
+                case "5":
+                    addAddressBook();
+                    break;
 
-                    case "6":
-                        removeAddressBook();
-                        break;
+                case "6":
+                    removeAddressBook();
+                    break;
 
-                    default:
-                        System.out.println("Invalid Input");
-                }
+                case "7":
+                    chooseAddressbook();
+                    break;
+
+                case "8":
+                    System.exit(0);
+
+                default:
+                    System.out.println("Invalid Input");
             }
-            catch (AlreadyExistContactException e) {
-                System.out.println(e.getMessage());
-            }
-
-            System.out.print("Do you want to do something else(y/n): ");
-            choose = sc.nextLine();
+        } catch (AlreadyExistContactException e) {
+            System.out.println(e.getMessage());
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Please enter number in given range only");
         }
+        choice();
     }
-    public static void main(String args[]) {
+
+    public static void main(String[] args) {
         System.out.println("Welcome to Address Book Program");
         defaultBook();
         choice();
     }
 }
-

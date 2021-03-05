@@ -210,12 +210,15 @@ class AddressBook {
 public class AddressBookMain {
 
     public static int numBook = 0;
-    private static String city;
-    private static String state;
+    private static String cityState;
     private static String firstName;
     private static String lastName;
 
     public static Scanner scanner = new Scanner(System.in);
+
+    public static ArrayList<String> city = new ArrayList<>();
+    public static ArrayList<String> state = new ArrayList<>();
+    public static ArrayList<String> person = new ArrayList<>();
 
     public static ArrayList<AddressBook> book = new ArrayList<>();
 
@@ -229,8 +232,8 @@ public class AddressBookMain {
         book.get(0).list.add(new Contact("shubham", "kumar", "NA", "guna", "mp", "NA", "9111649077", "NA"));
         book.get(0).list.add(new Contact("rajesh", "kumar", "NA", "guna", "up", "NA", "9111649077", "NA"));
         book.get(1).list.add(new Contact("suresh", "kumar", "NA", "guna", "up", "NA", "9111649077", "NA"));
-        book.get(1).list.add(new Contact("shubham", "kumar", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
-        book.get(2).list.add(new Contact("shubham", "kumar", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
+        book.get(1).list.add(new Contact("shubha", "kumari", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
+        book.get(2).list.add(new Contact("shub", "tata", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
     }
 
     public static void addAddressBook() {
@@ -257,30 +260,54 @@ public class AddressBookMain {
         }
     }
 
-    private static void personState() {
+    private static void askDetails() {
         System.out.println("Enter State: ");
-        state = scanner.nextLine();
+        cityState = scanner.nextLine();
         System.out.println("Enter First Name");
         firstName = scanner.nextLine();
         System.out.println("Enter out Last Name");
         lastName = scanner.nextLine();
-        for (int i = 0; i < book.size(); i++)
-            for (int j = 0; j < book.get(i).list.size(); j++)
-                if (book.get(i).list.get(j).getState().equals(state) && book.get(i).list.get(j).getFirstName().equals(firstName) && book.get(i).list.get(j).getLastName().equals(lastName))
-                    System.out.println(book.get(i).list.get(j));
     }
 
-    private static void personCity() {
-        System.out.println("Enter city: ");
-        city = scanner.nextLine();
-        System.out.println("Enter First Name");
-        firstName = scanner.nextLine();
-        System.out.println("Enter out Last Name");
-        lastName = scanner.nextLine();
-        for (int i = 0; i < book.size(); i++)
-            for (int j = 0; j < book.get(i).list.size(); j++)
-                if (book.get(i).list.get(j).getCity().equals(city) && book.get(i).list.get(j).getFirstName().equals(firstName) && book.get(i).list.get(j).getLastName().equals(lastName))
-                    System.out.println(book.get(i).list.get(j));
+    private static void searchPersonState() {
+        askDetails();
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list)
+                if (contact.getState().equals(cityState) && contact.getFirstName().equals(firstName) && contact.getLastName().equals(lastName))
+                    System.out.println(contact);
+    }
+
+    private static void searchPersonCity() {
+        askDetails();
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list)
+                if (contact.getCity().equals(cityState) && contact.getFirstName().equals(firstName) && contact.getLastName().equals(lastName))
+                    System.out.println(contact);
+    }
+
+    private static void maintainDictionary() {
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list) {
+                person.add(contact.getFirstName() + " " + contact.getLastName());
+                city.add(contact.getCity());
+                state.add(contact.getState());
+            }
+    }
+
+    private static void viewPersonsByCity() {
+        System.out.print("Enter name of City: ");
+        cityState = scanner.nextLine();
+        for (int i = 0; i < city.size(); i++)
+            if (city.get(i).equals(cityState))
+                System.out.println("Name: " + person.get(i));
+    }
+
+    private static void viewPersonsByState() {
+        System.out.print("Enter name of State: ");
+        cityState = scanner.nextLine();
+        for (int i = 0; i < state.size(); i++)
+            if (state.get(i).equals(cityState))
+                System.out.println("Name: " + person.get(i));
     }
 
     public static void choice() {
@@ -296,9 +323,11 @@ public class AddressBookMain {
             System.out.println("7. Switch Address Book");
             System.out.println("8. Search person by State");
             System.out.println("9. Search person by City");
-            System.out.println("10. Exit");
+            System.out.println("10. View persons in State");
+            System.out.println("11. View persons in City");
+            System.out.println("12. Exit");
 
-            System.out.print("Enter your choice(1-10): ");
+            System.out.print("Enter your choice(1-12): ");
             String choose = scanner.nextLine();
             switch (choose) {
 
@@ -334,14 +363,24 @@ public class AddressBookMain {
                     break;
 
                 case "8":
-                    personState();
+                    searchPersonState();
                     break;
 
                 case "9":
-                    personCity();
+                    searchPersonCity();
                     break;
 
                 case "10":
+                    maintainDictionary();
+                    viewPersonsByState();
+                    break;
+
+                case "11":
+                    maintainDictionary();
+                    viewPersonsByCity();
+                    break;
+
+                case "12":
                     System.exit(0);
 
                 default:
@@ -351,6 +390,8 @@ public class AddressBookMain {
             System.out.println(e.getMessage());
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Please enter number in given range only");
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter only valid input");
         }
         choice();
     }

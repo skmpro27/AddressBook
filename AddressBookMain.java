@@ -94,7 +94,7 @@ class Contact {
 
     @Override
     public String toString() {
-        return "Name: " + firstName + " " + lastName +
+        return "\nName: " + firstName + " " + lastName +
                 "\nAddress: " + address + ", " + city + ", " + state +
                 "\nZIP: " + zip + "\nPhone Number: " + phoneNum + "\nEmail: " + email;
     }
@@ -210,27 +210,40 @@ class AddressBook {
 public class AddressBookMain {
 
     public static int numBook = 0;
+    private static String city;
+    private static String state;
+    private static String firstName;
+    private static String lastName;
 
     public static Scanner scanner = new Scanner(System.in);
 
     public static ArrayList<AddressBook> book = new ArrayList<>();
 
     public static void defaultBook() {
-        book.add( new AddressBook("default address book"));
+        book.add(new AddressBook("default address book"));
+        book.add(new AddressBook("Address Book 1"));
+        book.add(new AddressBook("Address Book 2"));
+    }
+
+    public static void defaultContact() {
+        book.get(0).list.add(new Contact("shubham", "kumar", "NA", "guna", "mp", "NA", "9111649077", "NA"));
+        book.get(0).list.add(new Contact("rajesh", "kumar", "NA", "guna", "up", "NA", "9111649077", "NA"));
+        book.get(1).list.add(new Contact("suresh", "kumar", "NA", "guna", "up", "NA", "9111649077", "NA"));
+        book.get(1).list.add(new Contact("shubham", "kumar", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
+        book.get(2).list.add(new Contact("shubham", "kumar", "NA", "dhar", "mp", "NA", "9111649077", "NA"));
     }
 
     public static void addAddressBook() {
         System.out.print("Enter name of new Address Book: ");
         String str = scanner.nextLine();
-        book.add( new AddressBook(str));
+        book.add(new AddressBook(str));
     }
 
     public static void removeAddressBook() {
         if (book.size() > 1) {
             chooseAddressbook();
             book.remove(numBook);
-        }
-        else
+        } else
             System.out.println("Only default Address Book is Available");
     }
 
@@ -244,6 +257,32 @@ public class AddressBookMain {
         }
     }
 
+    private static void personState() {
+        System.out.println("Enter State: ");
+        state = scanner.nextLine();
+        System.out.println("Enter First Name");
+        firstName = scanner.nextLine();
+        System.out.println("Enter out Last Name");
+        lastName = scanner.nextLine();
+        for (int i = 0; i < book.size(); i++)
+            for (int j = 0; j < book.get(i).list.size(); j++)
+                if (book.get(i).list.get(j).getState().equals(state) && book.get(i).list.get(j).getFirstName().equals(firstName) && book.get(i).list.get(j).getLastName().equals(lastName))
+                    System.out.println(book.get(i).list.get(j));
+    }
+
+    private static void personCity() {
+        System.out.println("Enter city: ");
+        city = scanner.nextLine();
+        System.out.println("Enter First Name");
+        firstName = scanner.nextLine();
+        System.out.println("Enter out Last Name");
+        lastName = scanner.nextLine();
+        for (int i = 0; i < book.size(); i++)
+            for (int j = 0; j < book.get(i).list.size(); j++)
+                if (book.get(i).list.get(j).getCity().equals(city) && book.get(i).list.get(j).getFirstName().equals(firstName) && book.get(i).list.get(j).getLastName().equals(lastName))
+                    System.out.println(book.get(i).list.get(j));
+    }
+
     public static void choice() {
         try {
             System.out.println();
@@ -255,9 +294,11 @@ public class AddressBookMain {
             System.out.println("5. Add Address Book");
             System.out.println("6. Delete Address Book");
             System.out.println("7. Switch Address Book");
-            System.out.println("8. Exit");
+            System.out.println("8. Search person by State");
+            System.out.println("9. Search person by City");
+            System.out.println("10. Exit");
 
-            System.out.print("Enter your choice(1-8): ");
+            System.out.print("Enter your choice(1-10): ");
             String choose = scanner.nextLine();
             switch (choose) {
 
@@ -293,6 +334,14 @@ public class AddressBookMain {
                     break;
 
                 case "8":
+                    personState();
+                    break;
+
+                case "9":
+                    personCity();
+                    break;
+
+                case "10":
                     System.exit(0);
 
                 default:
@@ -309,6 +358,7 @@ public class AddressBookMain {
     public static void main(String[] args) {
         System.out.println("Welcome to Address Book Program");
         defaultBook();
+        defaultContact();
         choice();
     }
 }

@@ -219,6 +219,9 @@ public class AddressBookMain {
     public static Map<String, String> cityDictionary = new HashMap<>();
     public static Map<String, String> stateDictionary = new HashMap<>();
 
+    public static Map<String, Integer> cityCount = new HashMap<>();
+    public static Map<String, Integer> stateCount = new HashMap<>();
+
     public static ArrayList<AddressBook> book = new ArrayList<>();
 
     public static void defaultBook() {
@@ -312,6 +315,48 @@ public class AddressBookMain {
                 System.out.println("Name: " + ls.getKey());
     }
 
+    private static void setCityCount() {
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list) {
+                cityCount.put(contact.getCity(), 0);
+            }
+
+        for (Map.Entry<String, Integer> ls : cityCount.entrySet()) {
+            int count = 0;
+            for (AddressBook addressBook: book)
+                for (Contact contact: addressBook.list)
+                    if (contact.getCity().equals(ls.getKey())) {
+                        count++;
+                        cityCount.put(contact.getCity(), count);
+                    }
+        }
+
+        for (Map.Entry<String, Integer> ls : cityCount.entrySet()) {
+            System.out.println("City: " + ls.getKey() + " Number of Person: " + ls.getValue());
+        }
+    }
+
+    private static void setStateCount() {
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list) {
+                stateCount.put(contact.getState(), 0);
+            }
+
+        for (Map.Entry<String, Integer> ls : stateCount.entrySet()) {
+            int count = 0;
+            for (AddressBook addressBook: book)
+                for (Contact contact: addressBook.list)
+                    if (contact.getState().equals(ls.getKey())) {
+                        count++;
+                        stateCount.put(contact.getState(), count);
+                    }
+        }
+
+        for (Map.Entry<String, Integer> ls : stateCount.entrySet()) {
+            System.out.println("State: " + ls.getKey() + " Number of Person: " + ls.getValue());
+        }
+    }
+
     public static void choice() {
         try {
             System.out.println();
@@ -327,9 +372,11 @@ public class AddressBookMain {
             System.out.println("9. Search person by City");
             System.out.println("10. View persons in State");
             System.out.println("11. View persons in City");
-            System.out.println("12. Exit");
+            System.out.println("12. Number of persons in State");
+            System.out.println("13. Number of persons in City");
+            System.out.println("14. Exit");
 
-            System.out.print("Enter your choice(1-12): ");
+            System.out.print("Enter your choice(1-14): ");
             String choose = scanner.nextLine();
             switch (choose) {
 
@@ -381,6 +428,14 @@ public class AddressBookMain {
                     break;
 
                 case "12":
+                    setStateCount();
+                    break;
+
+                case "13":
+                    setCityCount();
+                    break;
+
+                case "14":
                     System.exit(0);
 
                 default:

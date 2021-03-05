@@ -216,9 +216,8 @@ public class AddressBookMain {
 
     public static Scanner scanner = new Scanner(System.in);
 
-    public static ArrayList<String> city = new ArrayList<>();
-    public static ArrayList<String> state = new ArrayList<>();
-    public static ArrayList<String> person = new ArrayList<>();
+    public static Map<String, String> cityDictionary = new HashMap<>();
+    public static Map<String, String> stateDictionary = new HashMap<>();
 
     public static ArrayList<AddressBook> book = new ArrayList<>();
 
@@ -285,29 +284,32 @@ public class AddressBookMain {
                     System.out.println(contact);
     }
 
-    private static void maintainDictionary() {
+    private static void personCityDictionary() {
         for (AddressBook addressBook: book)
             for (Contact contact: addressBook.list) {
-                person.add(contact.getFirstName() + " " + contact.getLastName());
-                city.add(contact.getCity());
-                state.add(contact.getState());
+                String name = contact.getFirstName() + " " + contact.getLastName();
+                cityDictionary.put(name, contact.getCity());
             }
+
+        System.out.println("Enter City:");
+        cityState = scanner.nextLine();
+        for (Map.Entry<String, String> ls : cityDictionary.entrySet())
+            if (cityState.equals(ls.getValue()))
+                System.out.println("Name: " + ls.getKey());
     }
 
-    private static void viewPersonsByCity() {
-        System.out.print("Enter name of City: ");
-        cityState = scanner.nextLine();
-        for (int i = 0; i < city.size(); i++)
-            if (city.get(i).equals(cityState))
-                System.out.println("Name: " + person.get(i));
-    }
+    private static void personStateDictionary() {
+        for (AddressBook addressBook: book)
+            for (Contact contact: addressBook.list) {
+                String name = contact.getFirstName() + " " + contact.getLastName();
+                stateDictionary.put(name, contact.getState());
+            }
 
-    private static void viewPersonsByState() {
-        System.out.print("Enter name of State: ");
+        System.out.println("Enter State:");
         cityState = scanner.nextLine();
-        for (int i = 0; i < state.size(); i++)
-            if (state.get(i).equals(cityState))
-                System.out.println("Name: " + person.get(i));
+        for (Map.Entry<String, String> ls : stateDictionary.entrySet())
+            if (cityState.equals(ls.getValue()))
+                System.out.println("Name: " + ls.getKey());
     }
 
     public static void choice() {
@@ -371,13 +373,11 @@ public class AddressBookMain {
                     break;
 
                 case "10":
-                    maintainDictionary();
-                    viewPersonsByState();
+                    personStateDictionary();
                     break;
 
                 case "11":
-                    maintainDictionary();
-                    viewPersonsByCity();
+                    personCityDictionary();
                     break;
 
                 case "12":

@@ -9,6 +9,55 @@ class AlreadyExistContactException extends Exception{
     }
 }
 
+enum InputTypeDictionary {
+    ENTERED_CITY {
+        @Override
+        public Map<String, String> stateOrCityDictionary() {
+            return AddressBookMain.cityDictionary;
+        }
+    },
+    ENTERED_STATE {
+        @Override
+        public Map<String, String> stateOrCityDictionary() {
+            return AddressBookMain.stateDictionary;
+        }
+    };
+
+    public abstract Map<String, String> stateOrCityDictionary();
+}
+
+enum InputType {
+    ENTERED_CITY {
+        @Override
+        public String stateOrCity(Contact contact) {
+            return contact.getCity();
+        }
+    },
+    ENTERED_STATE {
+        @Override
+        public String stateOrCity(Contact contact) {
+            return contact.getState();
+        }
+    };
+    public abstract String stateOrCity(Contact contact);
+}
+
+enum InputTypeCompare {
+    SORT_BY_NAME {
+        @Override
+        public Comparator<Contact> nameOrAddressCompare() {
+            return Comparator.comparing(Contact::getFirstName).thenComparing(Contact::getLastName);
+        }
+    },
+    SORT_BY_ADDRESS {
+        @Override
+        public Comparator<Contact> nameOrAddressCompare(){
+            return Comparator.comparing(Contact::getFirstName).thenComparing(Contact::getLastName);
+        }
+    };
+    public abstract Comparator<Contact> nameOrAddressCompare();
+}
+
 class Contact {
 
     //variables
@@ -211,12 +260,9 @@ class AddressBook {
 
 public class AddressBookMain {
 
-    enum InputType {
-        ENTERED_STATE,
-        ENTERED_CITY,
-    }
-
     private InputType type;
+    private InputTypeCompare typeCompare;
+    private InputTypeDictionary typeDictionary;
 
     private int numBook = 0;
     private String cityState;
@@ -226,8 +272,8 @@ public class AddressBookMain {
 
     public Scanner scanner = new Scanner(System.in);
 
-    public Map<String, String> stateDictionary = new HashMap<>();
-    public Map<String, String> cityDictionary = new HashMap<>();
+    public static Map<String, String> stateDictionary = new HashMap<>();
+    public static Map<String, String> cityDictionary = new HashMap<>();
 
     public List<Contact> allContacts = new ArrayList<>();
     public ArrayList<AddressBook> book = new ArrayList<>();
@@ -279,26 +325,6 @@ public class AddressBookMain {
         lastName = scanner.nextLine();
     }
 
-    private String stateOrCity(Contact contact) {
-        switch (type) {
-            case ENTERED_CITY:
-                return contact.getCity();
-
-            case ENTERED_STATE:
-                return contact.getState();
-
-            default:
-                return " ";
-        }
-    }
-
-    private Map<String, String> stateOrCityDictionary() {
-        if (InputType.ENTERED_CITY == type)
-            return cityDictionary;
-        else
-            return stateDictionary;
-    }
-
     private void reduceToSingleContactList() {
         book.forEach(addressBook -> allContacts.addAll(addressBook.contactList));
     }
@@ -307,9 +333,8 @@ public class AddressBookMain {
         allContacts.clear();
     }
 
-    private final Comparator<Contact> name = Comparator.comparing(Contact::getFirstName).thenComparing(Contact::getLastName);
-    private final Predicate<Contact> isPresentInState = contact -> stateOrCity(contact).equals(cityState) && contact.getFirstName().equals(firstName) && contact.getLastName().equals(lastName);
-    private final Consumer<String> displayCount = nameOfPlace -> System.out.println("Number of person in " + nameOfPlace + ": " + allContacts.stream().filter(contact -> nameOfPlace.equals(stateOrCity(contact))).count());
+    private final Predicate<Contact> isPresentInState = contact -> type.stateOrCity(contact).equals(cityState) && contact.getFirstName().equals(firstName) && contact.getLastName().equals(lastName);
+    private final Consumer<String> displayCount = nameOfPlace -> System.out.println("Number of person in " + nameOfPlace + ": " + allContacts.stream().filter(contact -> nameOfPlace.equals(type.stateOrCity(contact))).count());
 
     private void personStateOrCity() {
         askDetails();
@@ -324,25 +349,26 @@ public class AddressBookMain {
         cityState = scanner.nextLine();
         //to search for persons in city or state and maintain dictionary for the same
         allContacts.stream()
-                .filter(contact -> stateOrCity(contact).equals(cityState))
-                .forEach(contact -> stateOrCityDictionary().put(contact.getFirstName() + " " + contact.getLastName(), stateOrCity(contact)));
+                .filter(contact -> type.stateOrCity(contact).equals(cityState))
+                .forEach(contact -> typeDictionary.stateOrCityDictionary().put(contact.getFirstName() + " " + contact.getLastName(), type.stateOrCity(contact)));
 
-        stateOrCityDictionary().forEach((key, value) -> System.out.println("Name: " + key));
+       typeDictionary.stateOrCityDictionary().forEach((key, value) -> System.out.println("Name: " + key));
     }
 
     private void getCountCityState() {
         System.out.println();
         //to make a list of city
         allContacts.stream()
-                .map(this::stateOrCity)
+                .map(type::stateOrCity)
                 .distinct()
                 .forEach(displayCount);
     }
 
-    private void sortByName() {
+    private void sortByNameOrAddress() {
         System.out.println();
+        //sort the contact by name or by city, state or zip
         allContacts.stream()
-                .sorted(name)
+                .sorted(typeCompare.nameOrAddressCompare())
                 .forEach(System.out::println);
     }
 
@@ -364,11 +390,12 @@ public class AddressBookMain {
             System.out.println("12. Number of persons in State");
             System.out.println("13. Number of persons in City");
             System.out.println("14. Sort by Name");
-            System.out.println("15. Exit");
+            System.out.println("15. Sort by Address");
+            System.out.println("16. Exit");
 
-            System.out.print("Enter your choice(1-15): ");
+            System.out.print("Enter your choice(1-16): ");
             String choose = scanner.nextLine();
-	    reduceToSingleContactList();
+            reduceToSingleContactList();
             switch (choose) {
 
                 case "1":
@@ -417,12 +444,14 @@ public class AddressBookMain {
                 case "10":
                     string = "State: ";
                     type = InputType.ENTERED_STATE;
+                    typeDictionary = InputTypeDictionary.ENTERED_STATE;
                     personStateOrCityDictionary();
                     break;
 
                 case "11":
                     string = "City: ";
                     type = InputType.ENTERED_CITY;
+                    typeDictionary = InputTypeDictionary.ENTERED_CITY;
                     personStateOrCityDictionary();
                     break;
 
@@ -437,10 +466,16 @@ public class AddressBookMain {
                     break;
 
                 case "14":
-                    sortByName();
+                    typeCompare = InputTypeCompare.SORT_BY_NAME;
+                    sortByNameOrAddress();
                     break;
 
                 case "15":
+                    typeCompare = InputTypeCompare.SORT_BY_ADDRESS;
+                    sortByNameOrAddress();
+                    break;
+
+                case "16":
                     System.exit(0);
 
                 default:
@@ -452,11 +487,9 @@ public class AddressBookMain {
             System.out.println("Please enter number in given range only");
         } catch (NumberFormatException e) {
             System.out.println("Please enter only valid input");
-        } catch (Exception e) {
-            System.out.println("Some problem is there");
         }
         System.out.println("-------------X-------------\nPress any key to continue: ");
-        cityState = scanner.nextLine();
+        string = scanner.nextLine();
         reduceListToNull();
         choice();
     }

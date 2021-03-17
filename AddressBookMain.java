@@ -1,7 +1,11 @@
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.*;
 
 class AlreadyExistContactException extends Exception{
     public AlreadyExistContactException(String message) {
@@ -145,26 +149,40 @@ class Contact {
 
     @Override
     public String toString() {
-        return "\nName: " + firstName + " " + lastName +
-                "\nAddress: " + address + ", " + city + ", " + state +
-                "\nZIP: " + zip + "\nPhone Number: " + phoneNum + "\nEmail: " + email;
+        return "Name: " + firstName + " " + lastName +
+                " Address: " + address + " " + city + " " + state +
+                " ZIP: " + zip + " Phone Number: " + phoneNum + " Email: " + email + "\n";
     }
 }
 
 class AddressBook {
 
     public String bookName;
+    public String path;
+
     public String firstName;
     public String lastName;
     public int index;
 
-    public AddressBook(String bookName) {
+    public AddressBook(String bookName, String path) {
         this.bookName = bookName;
+        this.path = path;
     }
 
-    ArrayList<Contact> contactList = new ArrayList<Contact>();
-
+    ArrayList<Contact> contactList = new ArrayList<>();
     Scanner sc = new Scanner(System.in);
+    BufferedReader reader;
+
+    public void addContactFromFile() throws Exception {
+        reader = new BufferedReader(new FileReader(path));
+        String line = reader.readLine();
+        while (line != null) {
+            String[] str = line.split(" ");
+            contactList.add(new Contact(str[1], str[2], str[4], str[5], str[6], str[8], str[11], str[13]));
+            // read next line
+            line = reader.readLine();
+        }
+    }
 
     public boolean checkName() {
         System.out.print("\nEnter First Name: ");
@@ -178,9 +196,15 @@ class AddressBook {
         return false;
     }
 
+    public void writeContacts() throws IOException {
+        FileWriter fileWriter = new FileWriter(path,true);
+        System.out.println(path);
+        fileWriter.write(contactList.get(contactList.size()-1).toString());
+        fileWriter.close();
+    }
 
     //taking input from user
-    public void addContact() throws AlreadyExistContactException {
+    public void addContact() throws AlreadyExistContactException, IOException {
         String address = null, city = null, state = null, zip = null, phoneNum = null, email = null;
         String check = "y";
         System.out.println("\nAdd Contact");
@@ -202,16 +226,18 @@ class AddressBook {
             } else
                 throw new AlreadyExistContactException("Contact name already exist");
 
+            contactList.add( new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
+            writeContacts();
             System.out.print("Do you want to add more Contacts(y/n): ");
             check = sc.nextLine();
-            contactList.add( new Contact(firstName, lastName, address, city, state, zip, phoneNum, email));
+
         }
     }
 
     //to edit particular contact
-    public String editContact() {
+    public String editContact() throws IOException {
         System.out.println("\nEdit Contact");
-        if (!checkName()) {
+        if (checkName()) {
             System.out.print("\nEnter First Name: ");
             contactList.get(index).setFirstName(sc.nextLine());
             System.out.print("Enter Last Name: ");
@@ -230,19 +256,29 @@ class AddressBook {
             contactList.get(index).setEmail(sc.nextLine());
             System.out.println();
             System.out.println(contactList.get(index));
+            writeWholeFile();
             return "Updated";
         }
         return "Name not found";
     }
 
     //to remove contact
-    public String removeContact() {
+    public String removeContact() throws IOException {
         System.out.println("\nRemove Contact");
         if (checkName()) {
             contactList.remove(index);
+            writeWholeFile();
             return "Deleted";
         }
         return "Name not found";
+    }
+
+    public void writeWholeFile() throws IOException {
+        FileWriter fileWriter = new FileWriter(path,false);
+        System.out.println(path);
+        for (Contact contact: contactList)
+            fileWriter.write(contact.toString());
+        fileWriter.close();
     }
 
     public void displayContact() {
@@ -254,7 +290,7 @@ class AddressBook {
 
     @Override
     public String toString() {
-        return bookName;
+        return bookName + " Path: " + path;
     }
 }
 
@@ -278,30 +314,52 @@ public class AddressBookMain {
     public List<Contact> allContacts = new ArrayList<>();
     public ArrayList<AddressBook> book = new ArrayList<>();
 
-    public void defaultBook() {
-        book.add(new AddressBook("default address book"));
-        book.add(new AddressBook("Address Book 1"));
-        book.add(new AddressBook("Address Book 2"));
+    FileWriter file;
+    BufferedReader reader;
+
+    public void addAddressFromFile() throws Exception {
+        reader = new BufferedReader(new FileReader("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt"));
+        String line = reader.readLine();
+        while (line != null) {
+            String[] str = line.split(" ");
+            book.add(new AddressBook(str[0], str[2]));
+            book.get(book.size() -1).addContactFromFile();
+            // read next line
+            line = reader.readLine();
+        }
     }
 
-    public void defaultContact() {
-        book.get(0).contactList.add(new Contact("shubham", "kumar", "NA", "guna", "mp", "473111", "9111649077", "NA"));
-        book.get(0).contactList.add(new Contact("rajesh", "kumar", "NA", "guna", "up", "473001", "9111649077", "NA"));
-        book.get(1).contactList.add(new Contact("suresh", "kumar", "NA", "guntur", "ap", "522001", "9111649077", "NA"));
-        book.get(1).contactList.add(new Contact("shubham", "verma", "NA", "dhar", "mp", "454001", "9111649077", "NA"));
-        book.get(2).contactList.add(new Contact("shub", "tata", "NA", "dhar", "mp", "454001", "9111649077", "NA"));
+    public void writeAddressBook() throws IOException {
+        FileWriter masterFile = new FileWriter("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt", true);
+        masterFile.write("\n" + book.get(book.size() - 1).toString());
+        masterFile.close();
     }
 
-    public void addAddressBook() {
+    public void writeWholeFile() throws IOException {
+        FileWriter fileWriter = new FileWriter("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt",false);
+        for (AddressBook addressBook: book) {
+            if (addressBook == book.get(0))
+                fileWriter.write(addressBook.toString());
+            fileWriter.write("\n" + addressBook.toString());
+        }
+        fileWriter.close();
+    }
+
+    public void addAddressBook() throws Exception {
         System.out.print("Enter name of new Address Book: ");
         String str = scanner.nextLine();
-        book.add(new AddressBook(str));
+        String path = "C:\\Users\\Manish\\Development\\Assignment\\Day12\\" + str + ".txt";
+        file = new FileWriter(path, true);
+        book.add(new AddressBook(str, path));
+        writeAddressBook();
+        file.close();
     }
 
-    public void removeAddressBook() {
+    public void removeAddressBook() throws IOException {
         if (book.size() > 1) {
             chooseAddressBook();
             book.remove(numBook);
+            writeWholeFile();
         } else
             System.out.println("Only default Address Book is Available");
     }
@@ -487,6 +545,10 @@ public class AddressBookMain {
             System.out.println("Please enter number in given range only");
         } catch (NumberFormatException e) {
             System.out.println("Please enter only valid input");
+        } catch (IOException e) {
+            System.out.println("File not found");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         System.out.println("-------------X-------------\nPress any key to continue: ");
         string = scanner.nextLine();
@@ -495,10 +557,13 @@ public class AddressBookMain {
     }
 
     public static void main(String[] args) {
-        System.out.println("Welcome to Address Book Program");
-        AddressBookMain bookMain = new AddressBookMain();
-        bookMain.defaultBook();
-        bookMain.defaultContact();
-        bookMain.choice();
+        try {
+            System.out.println("Welcome to Address Book Program");
+            AddressBookMain bookMain = new AddressBookMain();
+            bookMain.addAddressFromFile();
+            bookMain.choice();
+        } catch (Exception e) {
+            System.out.println("Some thing went wrong");
+        }
     }
 }

@@ -1,8 +1,10 @@
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -171,16 +173,14 @@ class AddressBook {
 
     ArrayList<Contact> contactList = new ArrayList<>();
     Scanner sc = new Scanner(System.in);
-    BufferedReader reader;
 
     public void addContactFromFile() throws Exception {
-        reader = new BufferedReader(new FileReader(path));
-        String line = reader.readLine();
-        while (line != null) {
-            String[] str = line.split(" ");
+        //reader = new BufferedReader(new FileReader(path));
+        List<String> line;
+        line = Files.readAllLines(Path.of(path));
+        for (String ln: line) {
+            String[] str = ln.split(" ");
             contactList.add(new Contact(str[1], str[2], str[4], str[5], str[6], str[8], str[11], str[13]));
-            // read next line
-            line = reader.readLine();
         }
     }
 
@@ -197,10 +197,8 @@ class AddressBook {
     }
 
     public void writeContacts() throws IOException {
-        FileWriter fileWriter = new FileWriter(path,true);
-        System.out.println(path);
-        fileWriter.write(contactList.get(contactList.size()-1).toString());
-        fileWriter.close();
+        String line = contactList.get(contactList.size() - 1).toString();
+        Files.write(Path.of(path), line.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
     }
 
     //taking input from user
@@ -273,12 +271,14 @@ class AddressBook {
         return "Name not found";
     }
 
-    public void writeWholeFile() throws IOException {
-        FileWriter fileWriter = new FileWriter(path,false);
-        System.out.println(path);
-        for (Contact contact: contactList)
-            fileWriter.write(contact.toString());
-        fileWriter.close();
+    public void writeWholeFile() {
+        contactList.forEach(contact -> {
+            try {
+                Files.write(Path.of(path), contact.toString().getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void displayContact() {
@@ -305,6 +305,7 @@ public class AddressBookMain {
     private String firstName;
     private String lastName;
     private String string;
+    private static final String MASTER_PATH = "C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt";
 
     public Scanner scanner = new Scanner(System.in);
 
@@ -314,45 +315,39 @@ public class AddressBookMain {
     public List<Contact> allContacts = new ArrayList<>();
     public ArrayList<AddressBook> book = new ArrayList<>();
 
-    FileWriter file;
-    BufferedReader reader;
-
     public void addAddressFromFile() throws Exception {
-        reader = new BufferedReader(new FileReader("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt"));
-        String line = reader.readLine();
-        while (line != null) {
-            String[] str = line.split(" ");
+        List<String> line;
+        line = Files.readAllLines(Path.of(MASTER_PATH));
+        for (String ln: line) {
+            String[] str = ln.split(" ");
             book.add(new AddressBook(str[0], str[2]));
             book.get(book.size() -1).addContactFromFile();
-            // read next line
-            line = reader.readLine();
         }
     }
 
     public void writeAddressBook() throws IOException {
-        FileWriter masterFile = new FileWriter("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt", true);
-        masterFile.write("\n" + book.get(book.size() - 1).toString());
-        masterFile.close();
+        String line = "\n" + book.get(book.size() - 1).toString();
+        Files.write(Path.of(MASTER_PATH), line.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
     }
 
     public void writeWholeFile() throws IOException {
-        FileWriter fileWriter = new FileWriter("C:\\Users\\Manish\\Development\\Assignment\\Day12\\MasterAddressBookList.txt",false);
         for (AddressBook addressBook: book) {
+            String line = "\n" + addressBook.toString();
             if (addressBook == book.get(0))
-                fileWriter.write(addressBook.toString());
-            fileWriter.write("\n" + addressBook.toString());
+                Files.write(Path.of(MASTER_PATH), addressBook.toString().getBytes());
+            else
+                Files.write(Path.of(MASTER_PATH), line.getBytes(), StandardOpenOption.APPEND);
         }
-        fileWriter.close();
     }
 
     public void addAddressBook() throws Exception {
         System.out.print("Enter name of new Address Book: ");
         String str = scanner.nextLine();
         String path = "C:\\Users\\Manish\\Development\\Assignment\\Day12\\" + str + ".txt";
-        file = new FileWriter(path, true);
+        File file = new File(path);
+	file.createNewFile();
         book.add(new AddressBook(str, path));
         writeAddressBook();
-        file.close();
     }
 
     public void removeAddressBook() throws IOException {
@@ -364,7 +359,7 @@ public class AddressBookMain {
             System.out.println("Only default Address Book is Available");
     }
 
-    private void chooseAddressBook() {
+    private void chooseAddressBook() throws IOException {
         System.out.println("Current Address Book: " + book.get(numBook));
         if (book.size() > 1) {
             for (int i = 0; i < book.size(); i++)
@@ -391,8 +386,13 @@ public class AddressBookMain {
         allContacts.clear();
     }
 
-    private final Predicate<Contact> isPresentInState = contact -> type.stateOrCity(contact).equals(cityState) && contact.getFirstName().equals(firstName) && contact.getLastName().equals(lastName);
-    private final Consumer<String> displayCount = nameOfPlace -> System.out.println("Number of person in " + nameOfPlace + ": " + allContacts.stream().filter(contact -> nameOfPlace.equals(type.stateOrCity(contact))).count());
+    private final Predicate<Contact> isPresentInState = contact -> type.stateOrCity(contact).equals(cityState) &&
+                                                        contact.getFirstName().equals(firstName) &&
+                                                        contact.getLastName().equals(lastName);
+
+    private final Consumer<String> displayCount = nameOfPlace -> System.out
+                                                          .println("Number of person in " + nameOfPlace + ": " + allContacts.stream()
+                                                          .filter(contact -> nameOfPlace.equals(type.stateOrCity(contact))).count());
 
     private void personStateOrCity() {
         askDetails();
